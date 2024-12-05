@@ -28,6 +28,9 @@ require_once(__DIR__ . '/variables.php');
                 if ($loginExists > 0) {
                     $errors[] = 'Ce login existe déjà. Veuillez en choisir un autre.';
                 } else {
+                    // Hacher le mot de passe avant de l'insérer
+                    $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
+
                     // Insérer les données si tout est valide
                     $sql = 'INSERT INTO users (nom, prenom, login, password) 
                             VALUES (:nom, :prenom, :login, :mdp)';
@@ -36,7 +39,7 @@ require_once(__DIR__ . '/variables.php');
                     $stmt->bindParam(':nom', $nom);
                     $stmt->bindParam(':prenom', $prenom);
                     $stmt->bindParam(':login', $login);
-                    $stmt->bindParam(':mdp', $mdp);
+                    $stmt->bindParam(':mdp', $hashedPassword);
 
                     $stmt->execute();
                     header("Location: login.php");

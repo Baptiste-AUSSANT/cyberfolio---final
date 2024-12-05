@@ -24,13 +24,12 @@ require_once(__DIR__ . '/variables.php');
             if (empty($mdp)) { $errors[] = 'Le champ mot de passe est vide.'; }
 
             if (empty($errors)) {
-                // Préparer la requête SQL avec des placeholders pour login
-                $sql = 'SELECT * FROM users WHERE login = :login AND password = :mdp';
+                // Préparer la requête SQL pour récupérer l'utilisateur avec ce login
+                $sql = 'SELECT * FROM users WHERE login = :login';
                 $stmt = $mysqlClient->prepare($sql);
 
-                // Lier les paramètres :login
+                // Lier le paramètre :login
                 $stmt->bindParam(':login', $login);
-                $stmt->bindParam(':mdp', $mdp);
 
                 // Exécuter la requête
                 $stmt->execute();
@@ -38,12 +37,14 @@ require_once(__DIR__ . '/variables.php');
                 // Vérifier si l'utilisateur existe
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($user) {
+                if ($user && password_verify($mdp, $user['password'])) {
+                    // Si le mot de passe est correct, on stocke les informations de la session
                     $_SESSION['id_session'] = $user['id'];
                     $_SESSION['login_session'] = $user['login'];
                     $_SESSION['prenom_session'] = $user['prenom'];
                     $_SESSION['nom_session'] = $user['nom'];
-                    // Si le mot de passe correspond, on redirige vers home.php
+
+                    // Rediriger vers home.php
                     header('Location: home.php?id=' . $_SESSION['id_session']);
                     exit(); // Toujours ajouter un exit() après une redirection
                 } else {
@@ -62,7 +63,6 @@ require_once(__DIR__ . '/variables.php');
         die('Erreur : ' . $exception->getMessage());
     }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="fr">
